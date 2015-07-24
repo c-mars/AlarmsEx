@@ -29,8 +29,11 @@ public class MainActivity extends ActionBarActivity {
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
 
         Intent intent = new Intent(A);
+        long start=System.currentTimeMillis();
+        intent.putExtra(E, start);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(this, RC, intent, 0);
-        alarmManager.set(AlarmManager.RTC, System.currentTimeMillis() + 5000, pendingIntent);
+//        alarmManager.set(AlarmManager.RTC, System.currentTimeMillis() + 5000, pendingIntent);
+        alarmManager.setInexactRepeating(AlarmManager.RTC, System.currentTimeMillis() + 5000, 10_000, pendingIntent);
     }
 
     @Override
@@ -52,11 +55,17 @@ public class MainActivity extends ActionBarActivity {
         super.onPause();
     }
 
+    private static final String E="e";
     class InReceiver extends BroadcastReceiver {
 
+        private Long last;
         @Override
         public void onReceive(Context context, Intent intent) {
-            t.setText("received:" + intent.getAction());
+            if(last==null) last=intent.getLongExtra(E, System.currentTimeMillis());
+            long now=System.currentTimeMillis();
+            long elapsed=now-last;
+            t.setText("received:" + intent.getAction()+"["+elapsed/1000+"]");
+            last=now;
         }
     }
 }
